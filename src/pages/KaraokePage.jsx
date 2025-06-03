@@ -6,58 +6,11 @@ import { createKaraokeItem, deleteKaraokeItem, toggleKaraokeItemCompletion } fro
 import { ApiError } from "../api/api.js";
 import SessionHeader from "../components/KaraokePage/SessionHeader.jsx";
 import AddSongForm from "../components/KaraokePage/AddSongForm.jsx";
+import AdminControls from "../components/KaraokePage/AdminControls.jsx";
+import cookieUtils from "../utils/cookieUtils.js";
 
-// Cookie utilities
-const cookieUtils = {
-    get: (name) => {
-        const nameEQ = name + "=";
-        const ca = document.cookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    },
-    set: (name, value, days = 30) => {
-        const expires = new Date();
-        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-        document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-    },
-    delete: (name) => {
-        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;`;
-    }
-};
 
-// Admin controls component
-function AdminControls({ isAdmin, setIsAdmin, setShowAdminLogin, code }) {
-    return (
-        <div className="d-flex gap-2 flex-wrap">
-            {!isAdmin && (
-                <button className="btn btn-outline-warning" onClick={() => setShowAdminLogin(true)}>
-                    <i className="bi bi-key me-2"></i>Admin Login
-                </button>
-            )}
-            {isAdmin && (
-                <div className="d-flex align-items-center gap-2">
-                    <span className="badge bg-success d-flex align-items-center">
-                        <i className="bi bi-shield-check me-1"></i>Admin Access
-                    </span>
-                    <button
-                        className="btn btn-sm btn-outline-danger"
-                        onClick={() => {
-                            setIsAdmin(false);
-                            cookieUtils.delete(`karaokeAdmin_${code}`);
-                        }}
-                        title="Logout from admin"
-                    >
-                        <i className="bi bi-box-arrow-right"></i>
-                    </button>
-                </div>
-            )}
-        </div>
-    );
-}
+
 
 
 // Alert component for non-critical errors

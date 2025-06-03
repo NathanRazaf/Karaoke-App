@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import cookieUtils from "../utils/cookieUtils.js";
 
 function HomePage() {
     const [username, setUsername] = useState('');
@@ -7,29 +8,11 @@ function HomePage() {
 
     // Load username from cookies on component mount
     useEffect(() => {
-        const savedUsername = getCookie('karaokeUsername');
+        const savedUsername = cookieUtils.get('karaokeUsername');
         if (savedUsername) {
             setUsername(savedUsername);
         }
     }, []);
-
-    // Cookie helper functions
-    const setCookie = (name, value, days = 30) => {
-        const expires = new Date();
-        expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-        document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/`;
-    };
-
-    const getCookie = (name) => {
-        const nameEQ = name + "=";
-        const ca = document.cookie.split(';');
-        for (let i = 0; i < ca.length; i++) {
-            let c = ca[i];
-            while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    };
 
     const handleUsernameChange = (e) => {
         const newUsername = e.target.value;
@@ -37,20 +20,20 @@ function HomePage() {
 
         // Save to cookies immediately
         if (newUsername.trim()) {
-            setCookie('karaokeUsername', newUsername.trim());
+            cookieUtils.set('karaokeUsername', newUsername.trim());
         }
     };
 
     const handleCreateKaraoke = () => {
         if (username.trim()) {
-            setCookie('karaokeUsername', username.trim());
+            cookieUtils.set('karaokeUsername', username.trim());
         }
         navigate('/create-karaoke');
     };
 
     const handleAccessKaraoke = () => {
         if (username.trim()) {
-            setCookie('karaokeUsername', username.trim());
+            cookieUtils.set('karaokeUsername', username.trim());
         }
         navigate('/access-karaoke');
     };

@@ -11,13 +11,17 @@ export async function getSessionByCode(code) {
     return handleApiResponse(response);
 }
 
-export async function createSession(title, admin_password) {
+export async function createSession(title, admin_password, access_code = null) {
     const response = await fetch(`${API_BASE_URL}/sessions`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({title, admin_password})
+        body: JSON.stringify({
+            title,
+            admin_password,
+            ...(access_code && { access_code })
+        })
     });
 
     return handleApiResponse(response);

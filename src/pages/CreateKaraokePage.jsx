@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createSession } from '../api/karaokeRoutes.js';
 
@@ -8,6 +8,40 @@ function CreateKaraokePage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+
+    const [code, setCode] = useState(['', '', '', '', '', '']);
+    const inputRefs = useRef([]);
+
+    const handleInputChange = (index, value) => {
+        const alphanumeric = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        if (alphanumeric.length <= 1) {
+            const newCode = [...code];
+            newCode[index] = alphanumeric;
+            setCode(newCode);
+            if (alphanumeric && index < 5) {
+                inputRefs.current[index + 1]?.focus();
+            }
+        }
+    };
+
+    const handleKeyDown = (index, e) => {
+        if (e.key === 'Backspace' && !code[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    const handlePaste = (e) => {
+        e.preventDefault();
+        const pastedText = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        const newCode = [...code];
+        for (let i = 0; i < Math.min(pastedText.length, 6); i++) {
+            newCode[i] = pastedText[i];
+        }
+        setCode(newCode);
+        const nextEmptyIndex = newCode.findIndex(char => char === '');
+        const focusIndex = nextEmptyIndex === -1 ? 5 : Math.min(nextEmptyIndex, 5);
+        inputRefs.current[focusIndex]?.focus();
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -22,11 +56,19 @@ function CreateKaraokePage() {
             return;
         }
 
+        // Added: Validate custom access code if provided
+        const fullCode = code.join('');
+        if (fullCode && fullCode.length !== 6) {
+            setError('Access code must be 6 characters');
+            return;
+        }
+
         setIsLoading(true);
         setError('');
 
         try {
-            const response = await createSession(title.trim(), adminPassword.trim());
+            // Modified: Pass fullCode (or null) as access_code to createSession
+            const response = await createSession(title.trim(), adminPassword.trim(), fullCode || null);
             // The API returns the session data in response.data with access_code
             if (response.data && response.data.access_code) {
                 navigate(`/access-karaoke/${response.data.access_code}`);
@@ -35,7 +77,12 @@ function CreateKaraokePage() {
                 navigate('/');
             }
         } catch (err) {
-            setError('Failed to create session. Please try again.');
+            // Modified: Enhanced error handling for duplicate access code
+            if (err.message && err.message.toLowerCase().includes('already exists')) {
+                setError('Access code already exists');
+            } else {
+                setError('Failed to create session. Please try again.');
+            }
             console.error('Error creating session:', err);
         } finally {
             setIsLoading(false);
@@ -92,6 +139,53 @@ function CreateKaraokePage() {
                             />
                             <div className="form-text">
                                 You'll need this password to delete songs and mark them as completed
+                            </div>
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="form-label fw-semibold">
+                                Custom access code (optional)
+                            </label>
+                            <div
+                                className="d-flex justify-content-start gap-2 mb-2"
+                                onPaste={handlePaste}
+                                style={{ maxWidth: '300px' }}
+                            >
+                                {code.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        ref={el => inputRefs.current[index] = el}
+                                        type="text"
+                                        value={digit}
+                                        onChange={(e) => handleInputChange(index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                        style={{
+                                            width: '40px',
+                                            height: '40px',
+                                            fontSize: '18px',
+                                            textAlign: 'center',
+                                            fontWeight: 'bold',
+                                            border: '2px solid #dee2e6',
+                                            borderRadius: '8px',
+                                            backgroundColor: digit ? '#f8f9fa' : 'white',
+                                            transition: 'all 0.2s ease',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                        }}
+                                        onFocus={(e) => {
+                                            e.target.style.borderColor = '#0d6efd';
+                                            e.target.style.boxShadow = '0 0 0 0.25rem rgba(13, 110, 253, 0.25)';
+                                        }}
+                                        onBlur={(e) => {
+                                            e.target.style.borderColor = '#dee2e6';
+                                            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                                        }}
+                                        maxLength={1}
+                                        disabled={isLoading}
+                                    />
+                                ))}
+                            </div>
+                            <div className="form-text">
+                                Leave empty to auto-generate a code
                             </div>
                         </div>
 
