@@ -82,7 +82,7 @@ function KaraokePage() {
     }, [code, username]);
 
     useEffect(() => {
-        const interval = setInterval(() => fetchData(true), 15000);
+        const interval = setInterval(() => fetchData(true), 5000);
         return () => clearInterval(interval);
     }, [code]);
 
