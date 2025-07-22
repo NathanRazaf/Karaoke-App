@@ -13,12 +13,12 @@ function CreateKaraokePage() {
     const inputRefs = useRef([]);
 
     const handleInputChange = (index, value) => {
-        const alphanumeric = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-        if (alphanumeric.length <= 1) {
+        const numeric = value.replace(/[^0-9]/g, '');
+        if (numeric.length <= 1) {
             const newCode = [...code];
-            newCode[index] = alphanumeric;
+            newCode[index] = numeric;
             setCode(newCode);
-            if (alphanumeric && index < 5) {
+            if (numeric && index < 5) {
                 inputRefs.current[index + 1]?.focus();
             }
         }
@@ -32,7 +32,7 @@ function CreateKaraokePage() {
 
     const handlePaste = (e) => {
         e.preventDefault();
-        const pastedText = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        const pastedText = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
         const newCode = [...code];
         for (let i = 0; i < Math.min(pastedText.length, 6); i++) {
             newCode[i] = pastedText[i];
@@ -155,7 +155,9 @@ function CreateKaraokePage() {
                                     <input
                                         key={index}
                                         ref={el => inputRefs.current[index] = el}
-                                        type="text"
+                                        type="number"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         value={digit}
                                         onChange={(e) => handleInputChange(index, e.target.value)}
                                         onKeyDown={(e) => handleKeyDown(index, e)}

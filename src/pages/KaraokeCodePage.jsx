@@ -8,16 +8,16 @@ function KaraokeCodePage() {
     const inputRefs = useRef([]);
 
     const handleInputChange = (index, value) => {
-        // Only allow alphanumeric characters
-        const alphanumeric = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        // Only allow numeric characters
+        const numeric = value.replace(/[^0-9]/g, '');
 
-        if (alphanumeric.length <= 1) {
+        if (numeric.length <= 1) {
             const newCode = [...code];
-            newCode[index] = alphanumeric;
+            newCode[index] = numeric;
             setCode(newCode);
 
             // Auto-focus next input if current input is filled
-            if (alphanumeric && index < 5) {
+            if (numeric && index < 5) {
                 inputRefs.current[index + 1]?.focus();
             }
         }
@@ -37,7 +37,7 @@ function KaraokeCodePage() {
 
     const handlePaste = (e) => {
         e.preventDefault();
-        const pastedText = e.clipboardData.getData('text').replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+        const pastedText = e.clipboardData.getData('text').replace(/[^0-9]/g, '');
         const newCode = [...code];
 
         for (let i = 0; i < Math.min(pastedText.length, 6); i++) {
@@ -71,34 +71,36 @@ function KaraokeCodePage() {
 
             <div className="d-flex justify-content-center gap-2 gap-sm-3 mb-4 w-100" onPaste={handlePaste} style={{ maxWidth: '400px' }}>
                 {code.map((digit, index) => (
-                    <input
-                        key={index}
-                        ref={el => inputRefs.current[index] = el}
-                        type="text"
-                        value={digit}
-                        onChange={(e) => handleInputChange(index, e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(index, e)}
-                        className="form-control text-center fw-bold flex-shrink-0"
-                        style={{
-                            width: 'clamp(45px, 12vw, 60px)',
-                            height: 'clamp(45px, 12vw, 60px)',
-                            fontSize: 'clamp(18px, 5vw, 24px)',
-                            border: '2px solid #dee2e6',
-                            borderRadius: '12px',
-                            backgroundColor: digit ? '#f8f9fa' : 'white',
-                            transition: 'all 0.2s ease',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                        }}
-                        onFocus={(e) => {
-                            e.target.style.borderColor = '#0d6efd';
-                            e.target.style.boxShadow = '0 0 0 0.25rem rgba(13, 110, 253, 0.25)';
-                        }}
-                        onBlur={(e) => {
-                            e.target.style.borderColor = '#dee2e6';
-                            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-                        }}
-                        maxLength={1}
-                    />
+                        <input
+                            key={index}
+                            ref={el => inputRefs.current[index] = el}
+                            type="number"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={digit}
+                            onChange={(e) => handleInputChange(index, e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(index, e)}
+                            className="form-control text-center fw-bold flex-shrink-0"
+                            style={{
+                                width: 'clamp(45px, 12vw, 60px)',
+                                height: 'clamp(45px, 12vw, 60px)',
+                                fontSize: 'clamp(18px, 5vw, 24px)',
+                                border: '2px solid #dee2e6',
+                                borderRadius: '12px',
+                                backgroundColor: digit ? '#f8f9fa' : 'white',
+                                transition: 'all 0.2s ease',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            }}
+                            onFocus={(e) => {
+                                e.target.style.borderColor = '#0d6efd';
+                                e.target.style.boxShadow = '0 0 0 0.25rem rgba(13, 110, 253, 0.25)';
+                            }}
+                            onBlur={(e) => {
+                                e.target.style.borderColor = '#dee2e6';
+                                e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                            }}
+                            maxLength={1}
+                        />
                 ))}
             </div>
 
